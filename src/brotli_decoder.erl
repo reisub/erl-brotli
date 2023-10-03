@@ -39,15 +39,50 @@ new() ->
     brotli_nif:decoder_create().
 
 -spec stream(Decoder :: t(), Data :: iodata()) -> {ok | more, iodata()} | error.
-stream(Decoder, Data) ->
+stream(Decoder, IOData) ->
+    Data = case IOData of
+      D when is_binary(D) -> D;
+      D -> list_to_binary(D)
+    end,
+
+    consume_data(Decoder, Data, <<>>).
+
+consume_data(Decoder, Data, Acc) ->
+
     case brotli_nif:decoder_decompress_stream(Decoder, Data) of
         ok ->
-            {ok, brotli_nif:decoder_take_output(Decoder)};
-        more ->
-            {more, brotli_nif:decoder_take_output(Decoder)};
+            {ok, <<Acc/binary, (take_all_output(Decoder))/binary>>};
+        more_input ->
+            % we assume all the input is consumed
+            {more, <<Acc/binary, (take_all_output(Decoder))/binary>>};
+
+        {more_output, Available} ->
+            Acc1 = <<Acc/binary, (take_all_output(Decoder))/binary>>,
+            consume_data(Decoder, binary:part(Data, {byte_size(Data), -Available}), Acc1);
         Other ->
             Other
     end.
+
+take_all_output(Decoder) ->
+  take_all_output(Decoder, <<>>).
+
+% precondition: Decoder is a valid resource
+% Repeatedly calls BrotliDecoderTakeOutput while
+% BrotliDecoderHasMoreOutput is true
+take_all_output(Decoder, Acc) ->
+  % decoder_take_output/decoder_has_more_output can return badarg but
+  % only if decoder is not a valid resource
+  % this is only called from stream() and the
+  % resource will be valid
+
+  Bin = brotli_nif:decoder_take_output(Decoder),
+  Acc1 = <<Acc/binary, Bin/binary>>,
+  case brotli_nif:decoder_has_more_output(Decoder) of
+    true ->
+      take_all_output(Decoder, Acc1);
+    false ->
+      Acc1
+  end.
 
 is_finished(Decoder) ->
     brotli_nif:decoder_is_finished(Decoder).
