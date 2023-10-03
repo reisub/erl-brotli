@@ -67,7 +67,8 @@
 #define ATOMS                                                                  \
   ENTRY(ok)                                                                    \
   ENTRY(error)                                                                 \
-  ENTRY(more)                                                                  \
+  ENTRY(more_output)                                                           \
+  ENTRY(more_input)                                                            \
   ENTRY(finished)
 
 #define ENTRY(X) static ERL_NIF_TERM atom_##X;
@@ -307,7 +308,7 @@ brotli_decoder_decompress_stream(ErlNifEnv *env, int argc,
     return BADARG;
   }
 
-  if (!enif_inspect_iolist_as_binary(env, argv[1], &input)) {
+  if (!enif_inspect_binary(env, argv[1], &input)) {
     return BADARG;
   }
 
@@ -318,13 +319,17 @@ brotli_decoder_decompress_stream(ErlNifEnv *env, int argc,
   BrotliDecoderResult result = BrotliDecoderDecompressStream(
       *state, &available_in, &next_in, &available_out, NULL, NULL);
 
+
   switch (result) {
   case BROTLI_DECODER_RESULT_SUCCESS:
-  case BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT:
     return atom_ok;
 
+  case BROTLI_DECODER_RESULT_NEEDS_MORE_OUTPUT:
+    return enif_make_tuple2(env, atom_more_output, enif_make_uint64(env, available_in));
+
   case BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT:
-    return atom_more;
+    /* we are assuming the whole input is consumed at this point */
+    return atom_more_input;
 
   default:
     return atom_error;
