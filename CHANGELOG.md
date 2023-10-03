@@ -1,18 +1,19 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
-
-<a name="v0.3.2"></a>
-## [v0.3.2] - 2023-07-25
 ### Bug Fixes
-- build on otp 26 ([`909192f`](https://github.com/yjh0502/erl-brotli/commit/909192fc18c102ff7323b9daa7b73d856c0b8796))
+- build on otp 26
+- chunk input for brotli:encode/{1,2}
+- remove maps:foreach/2 and use maps:fold/3 instead
+- change the HEAD branch name
+
+### Features
+- add decoder API
+- update library to use stream API
 
 
-<a name="v0.3.1"></a>
-## [v0.3.1] - 2022-01-06
-### Bug Fixes
-- chunk input for brotli:encode/{1,2} ([`eca29c4`](https://github.com/yjh0502/erl-brotli/commit/eca29c44e2d6298c0dc86a0c8e9145fd49fb2449))
-
+<a name="teller-master"></a>
+## [teller-master] - 2022-01-06
 
 <a name="v0.3.0"></a>
 ## v0.3.0 - 2021-10-04
@@ -25,6 +26,5 @@
 - update library to use stream API ([`bc09c59`](https://github.com/yjh0502/erl-brotli/commit/bc09c5969ae4c5b45c07abdd3eb55cc8652fa0ec))
 
 
-[Unreleased]: https://github.com/yjh0502/erl-brotli/compare/v0.3.2...HEAD
-[v0.3.2]: https://github.com/yjh0502/erl-brotli/compare/v0.3.1...v0.3.2
-[v0.3.1]: https://github.com/yjh0502/erl-brotli/compare/v0.3.0...v0.3.1
+[Unreleased]: https://github.com/yjh0502/erl-brotli/compare/teller-master...HEAD
+[teller-master]: https://github.com/yjh0502/erl-brotli/compare/v0.3.0...teller-master
